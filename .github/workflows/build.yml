@@ -1,20 +1,39 @@
-name: Build & Test API
+name: TypeScript x InvisiRisk
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  contents: write
+  packages: read
 
 jobs:
-  build:
+  python-application-build:
     runs-on: ubuntu-latest
-
+    name: Run build
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js 
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-    - run: npm ci
-    - run: npm test
+      - name: Setup PSE
+        uses: invisirisk/pse-action@latest 
+        with:
+          api_url: "https://app.invisirisk.com"
+          app_token: ${{ secrets.IR_API_KEY }}
+          
+      - uses: actions/checkout@v4
+
+      - name: Use npm
+        uses: actions/setup-node@v3
+        with:
+         node-version: '18'
+
+      - name: Install dependencies
+        run: npm install 
+        
+      - name: Cleanup PSE
+        if: always()
+        uses: invisirisk/pse-action@latest
+        with:
+          cleanup: "true"
+
+
+  
